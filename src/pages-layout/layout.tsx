@@ -2,7 +2,9 @@ import { AppShell } from "@mantine/core";
 import Head from "next/head";
 import React, { FC, ReactNode } from "react";
 
+import { Footer } from "./Footer";
 import { Header } from "./Header";
+import { SearchLinkButton } from "./SearchLinkButton";
 
 type Props = {
   children: ReactNode;
@@ -17,7 +19,11 @@ export const Layout: FC<Props> = ({ children }) => {
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <link rel="icon" href="/favicon.ico" />
       </Head>
-      <AppShell header={<Header />}>{children}</AppShell>
+      <AppShell header={<Header />} footer={<Footer />}>
+        {children}
+
+        <SearchLinkButton />
+      </AppShell>
     </div>
   );
 };

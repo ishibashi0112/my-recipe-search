@@ -1,9 +1,5 @@
-import React, { FC, ReactNode } from "react";
-
-type Props = {
-  children: ReactNode;
-};
+import React, { FC } from "react";
 
 export const IndexBody: FC = () => {
-  return <div>test</div>;
+  return <div></div>;
 };
