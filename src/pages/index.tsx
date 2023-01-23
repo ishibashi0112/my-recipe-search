@@ -11,7 +11,14 @@ const Home: NextPage = () => {
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <link rel="icon" href="/favicon.ico" />
       </Head>
-      <div className="m-0 text-red-200">ttttt</div>
+      <div>
+        <button className=" m-1 rounded border border-black bg-black p-2 text-xs text-white transition hover:bg-white hover:text-black hover:transition active:bg-gray-100">
+          登録する
+        </button>
+        <button className=" m-1 rounded border border-black  bg-neutral-50    p-2 text-xs text-black transition hover:bg-white hover:text-black hover:transition active:bg-gray-100">
+          登録する
+        </button>
+      </div>
     </div>
   );
 };
