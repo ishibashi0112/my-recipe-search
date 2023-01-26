@@ -1,5 +1,6 @@
 import {
   Anchor,
+  Button,
   Group,
   Header as MantineHeader,
   ThemeIcon,
@@ -7,11 +8,24 @@ import {
 } from "@mantine/core";
 import { IconToolsKitchen2 } from "@tabler/icons";
 import Link from "next/link";
+import { useRouter } from "next/router";
 import React, { FC } from "react";
 
+import { signOut } from "@/lib/firebase/firebaseAuth";
+
 export const Header: FC = () => {
+  const { push } = useRouter();
+
+  const handleLogout = async () => {
+    await signOut();
+    push("/login");
+  };
+
   return (
-    <MantineHeader className="flex items-center px-2" height={50}>
+    <MantineHeader
+      className="flex items-center justify-between px-2"
+      height={50}
+    >
       <Anchor
         className="hover:underline"
         variant="text"
@@ -28,7 +42,11 @@ export const Header: FC = () => {
         </Group>
       </Anchor>
 
-      <Group></Group>
+      <Group position="right">
+        <Button color="red" size="xs" compact onClick={() => handleLogout()}>
+          ログアウト
+        </Button>
+      </Group>
     </MantineHeader>
   );
 };

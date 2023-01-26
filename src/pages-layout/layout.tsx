@@ -21,9 +21,8 @@ export const Layout: FC<Props> = ({ children }) => {
       </Head>
       <AppShell header={<Header />} footer={<Footer />}>
         {children}
-
-        <SearchLinkButton />
       </AppShell>
+      <SearchLinkButton />
     </div>
   );
 };
