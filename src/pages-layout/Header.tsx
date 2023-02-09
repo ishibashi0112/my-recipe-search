@@ -1,26 +1,20 @@
 import {
   Anchor,
+  Avatar,
   Button,
   Group,
   Header as MantineHeader,
+  Menu,
   ThemeIcon,
   Title,
 } from "@mantine/core";
-import { IconToolsKitchen2 } from "@tabler/icons";
+import { IconLogout, IconToolsKitchen2 } from "@tabler/icons";
 import Link from "next/link";
-import { useRouter } from "next/router";
 import React, { FC } from "react";
 
-import { signOut } from "@/lib/firebase/firebaseAuth";
+import { logout } from "@/lib/firebase/firebaseAuth";
 
 export const Header: FC = () => {
-  const { push } = useRouter();
-
-  const handleLogout = async () => {
-    await signOut();
-    push("/login");
-  };
-
   return (
     <MantineHeader
       className="flex items-center justify-between px-2"
@@ -43,9 +37,23 @@ export const Header: FC = () => {
       </Anchor>
 
       <Group position="right">
-        <Button color="red" size="xs" compact onClick={() => handleLogout()}>
-          ログアウト
-        </Button>
+        <Menu>
+          <Menu.Target>
+            <Avatar radius="xl" color="yellow" />
+          </Menu.Target>
+          <Menu.Dropdown>
+            <Button
+              variant="subtle"
+              color="red"
+              size="xs"
+              compact
+              leftIcon={<IconLogout size={16} />}
+              onClick={() => logout()}
+            >
+              ログアウト
+            </Button>
+          </Menu.Dropdown>
+        </Menu>
       </Group>
     </MantineHeader>
   );

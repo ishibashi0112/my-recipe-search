@@ -5,6 +5,8 @@ import { adminAuth } from "@/lib/firebase/server";
 
 const handler = async (req: NextApiRequest, res: NextApiResponse) => {
   // Set session expiration to 5 days.
+  console.log(req.body);
+
   const expiresIn = 60 * 60 * 24 * 5 * 1000;
   const idToken = req.body.idToken as string;
 

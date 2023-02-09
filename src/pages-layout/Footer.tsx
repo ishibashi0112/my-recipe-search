@@ -6,7 +6,7 @@ import React, { FC } from "react";
 export const Footer: FC = () => {
   const { pathname } = useRouter();
   return (
-    <MantineFooter height={70}>
+    <MantineFooter height={50}>
       <div className="flex h-full">
         <NavLink
           className=""
