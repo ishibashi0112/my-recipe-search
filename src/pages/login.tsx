@@ -21,7 +21,7 @@ import {
 } from "@/lib/firebase/firebaseAuth";
 
 const SignIn: NextPage = () => {
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
   const { push } = useRouter();
 
   const handleLogin = useCallback(async () => {
@@ -38,12 +38,11 @@ const SignIn: NextPage = () => {
   useEffect(() => {
     const afterSignInProcess = async () => {
       setIsLoading(true);
+
       const result = await googleSignInRedirected();
-      if (result) {
-        await push("/");
-        return;
+      if (!result) {
+        setIsLoading(false);
       }
-      setIsLoading(false);
     };
     afterSignInProcess();
   }, []);
