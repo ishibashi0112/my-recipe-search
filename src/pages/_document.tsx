@@ -10,7 +10,11 @@ export default class _Document extends Document {
   render() {
     return (
       <Html>
-        <Head />
+        <Head>
+          <link rel="manifest" href="/manifest.json" />
+          <link rel="apple-touch-icon" href="/apple-touch-icon.png"></link>
+        </Head>
+
         <body>
           <Main />
           <NextScript />
