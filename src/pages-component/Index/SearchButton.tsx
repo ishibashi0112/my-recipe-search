@@ -111,6 +111,7 @@ export const SearchButton: FC<Props> = (props) => {
       >
         <form className="space-y-2" onSubmit={handleSubmit}>
           <TextInput
+            classNames={{ input: "text-base placeholder:text-sm" }}
             value={title}
             onChange={handleOnChange}
             label="タイトル"

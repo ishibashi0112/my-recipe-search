@@ -105,11 +105,12 @@ export const IngredientsForm: FC<Props> = React.memo((props) => {
         <div>
           <Group className="pr-2">
             <TextInput
-              className="flex-1"
+              className="flex-1 "
+              classNames={{ input: "text-base placeholder:text-sm" }}
               ref={ref}
               onChange={handleOnChange}
               variant="unstyled"
-              placeholder="キーワードで材料を絞り込む"
+              placeholder="材料を絞り込む"
               icon={<IconSearch size={16} />}
               autoComplete={"off"}
               rightSection={
