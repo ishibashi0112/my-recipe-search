@@ -3,55 +3,64 @@ import {
   Card,
   Group,
   LoadingOverlay,
+  PasswordInput,
   Space,
   Stack,
   Text,
+  TextInput,
   ThemeIcon,
   Title,
 } from "@mantine/core";
+import { useForm, zodResolver } from "@mantine/form";
 import { IconToolsKitchen2 } from "@tabler/icons";
 import { NextPage } from "next";
 import { useRouter } from "next/router";
-import React, { useCallback, useEffect, useState } from "react";
-import { FcGoogle } from "react-icons/fc";
+import React, { useEffect, useState } from "react";
+import { z } from "zod";
 
-import {
-  googleSignIn,
-  googleSignInRedirected,
-} from "@/lib/firebase/firebaseAuth";
+import { passwordLogin } from "@/lib/firebase/firebaseAuth";
+
+const schema = z.object({
+  email: z.string().min(1).email("誤ったemail形式です。"),
+  password: z.string().min(6, "passwordは6桁以上です。"),
+});
 
 const SignIn: NextPage = () => {
   const [isLoading, setIsLoading] = useState(false);
+  const [loginError, setLoginError] = useState("");
   const { push } = useRouter();
 
-  const handleLogin = useCallback(async () => {
+  const form = useForm({
+    initialValues: {
+      email: "",
+      password: "",
+    },
+    validate: zodResolver(schema),
+  });
+
+  const handleSubmit = async (values: typeof form.values) => {
     try {
       setIsLoading(true);
-      await googleSignIn();
-      console.log("test");
+      await passwordLogin(values.email, values.password);
+      push("/");
     } catch (error) {
+      setLoginError("emailもしくはパスワードが異なります。");
+    } finally {
       setIsLoading(false);
-      alert(error);
     }
-  }, []);
+  };
 
   useEffect(() => {
-    const afterSignInProcess = async () => {
-      setIsLoading(true);
-
-      const result = await googleSignInRedirected();
-      if (!result) {
-        setIsLoading(false);
-      }
-    };
-    afterSignInProcess();
-  }, []);
+    if (loginError) {
+      setLoginError("");
+    }
+  }, [form.values]);
 
   return (
     <div className="h-screen bg-gray-100">
-      <Space h={144} />
+      <Space h={120} />
 
-      <Card className="mx-auto h-52 w-80" shadow="md" withBorder>
+      <Card className="mx-auto h-96  w-80" shadow="md">
         <Group position="center" spacing={3}>
           <ThemeIcon color="yellow" radius="xl" size="xs">
             <IconToolsKitchen2 size={12} />
@@ -69,29 +78,28 @@ const SignIn: NextPage = () => {
 
         <Space h={30} />
 
-        <Stack justify="center" align="center">
-          <Button
-            className="border border-gray-200 shadow-sm active:shadow-none"
-            variant="outline"
-            color="dark"
-            onClick={() => handleLogin()}
-            disabled={isLoading}
-          >
-            <FcGoogle />
-            <Space w={10} />
-            <Text>Googleアカウントでログイン</Text>
-          </Button>
-        </Stack>
+        <form onSubmit={form.onSubmit(handleSubmit)}>
+          <Stack>
+            <TextInput
+              classNames={{ input: "text-base" }}
+              label="email"
+              {...form.getInputProps("email")}
+            />
+            <PasswordInput
+              classNames={{ input: "text-base" }}
+              label="password"
+              {...form.getInputProps("password")}
+            />
 
-        <Space h={8} />
+            <Text fz="xs" color="red" align="center">
+              {loginError}
+            </Text>
 
-        <Stack align="center">
-          <Text ml={5} color="dark" fz="xs">
-            ※Google認証でのみログインできます。
-            <br />
-            ※特定のアカウントのみがログインできます。
-          </Text>
-        </Stack>
+            <Button className="mt-4 w-full" type="submit" color="yellow">
+              ログイン
+            </Button>
+          </Stack>
+        </form>
       </Card>
       <LoadingOverlay
         loaderProps={{ size: "sm", color: "yellow" }}
