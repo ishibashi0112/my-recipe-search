@@ -1,12 +1,14 @@
 import {
   Alert,
   Button,
+  Card,
   Group,
   Highlight,
   Image,
   Modal,
   Space,
   Stack,
+  Table,
   Text,
   Title,
 } from "@mantine/core";
@@ -16,14 +18,15 @@ import {
   IconInfoCircle,
   IconSearch,
 } from "@tabler/icons";
-import React, { FC, useCallback, useState } from "react";
+import React, { FC, useCallback, useMemo, useState } from "react";
 
+import { hiraToKata, kataToHira } from "@/lib/util/functions";
 import { SearchButton } from "@/pages-component/Index/SearchButton";
 import { Ingredient, RecipesState, RecipesWithIngredients } from "@/type/types";
 
 type Proos = {
   recipes: RecipesWithIngredients[];
-  ingredientsNames: Ingredient["name"][];
+  ingredientsNames: Required<Pick<Ingredient, "furigana" | "shortName">>[];
 };
 
 const joinIngredientText = (ingredients: Ingredient[]) => {
@@ -42,6 +45,34 @@ export const IndexBody: FC<Proos> = (props) => {
     ingredientKeyword: [],
   });
 
+  const ingredientKeywords = useMemo(
+    () =>
+      recipesState.ingredientKeyword.reduce(
+        (
+          prev: string[],
+          current: Required<Pick<Ingredient, "furigana" | "shortName">>
+        ) => {
+          const shortName = current.shortName;
+          const toKatakanaShortName = hiraToKata(shortName);
+          const tohHiraganaShortName = kataToHira(shortName);
+
+          const furigana = current.furigana;
+          const toKatakanaFurigana = hiraToKata(furigana);
+
+          return [
+            ...prev,
+            shortName,
+            toKatakanaShortName,
+            tohHiraganaShortName,
+            furigana,
+            toKatakanaFurigana,
+          ];
+        },
+        []
+      ),
+    [recipesState]
+  );
+
   const handleOpen = useCallback((recipe: RecipesWithIngredients) => {
     setOpened(true);
     setRecipe(recipe);
@@ -50,13 +81,13 @@ export const IndexBody: FC<Proos> = (props) => {
   return (
     <div>
       {recipesState.data.length !== initialRecipes.length ? (
-        <Alert color="gray" icon={<IconSearch size={16} />}>
+        <Alert className="mb-2" color="yellow" icon={<IconSearch size={16} />}>
           <Group position="apart">
             <Text fz="sm">{`検索結果 : ${recipesState.data.length}件`}</Text>
             <Button
-              className="border-none active:translate-y-0"
-              variant="default"
-              color="gray"
+              className="active:translate-y-0"
+              variant="outline"
+              color="yellow"
               size="xs"
               compact
               onClick={() =>
@@ -76,7 +107,7 @@ export const IndexBody: FC<Proos> = (props) => {
           )}
           {recipesState.ingredientKeyword.length ? (
             <Text fz="sm">{`材料 : ${recipesState.ingredientKeyword.map(
-              (ingredient) => `${ingredient}`
+              (ingredient) => `${ingredient.shortName}`
             )}`}</Text>
           ) : null}
         </Alert>
@@ -87,58 +118,66 @@ export const IndexBody: FC<Proos> = (props) => {
       <Space h={5} />
 
       {recipesState.data.length ? (
-        <Stack>
+        <Stack spacing="xs">
           {recipesState.data.map((recipe) => (
-            <Group align="self-start" noWrap key={recipe.id}>
-              <Image src={recipe.imageUrl} width={70} height={100} />
-              <div>
-                <Highlight highlight={recipesState.titleKeyword} lineClamp={1}>
-                  {recipe.title}
-                </Highlight>
+            <Card key={recipe.id} withBorder shadow="xs" p="xs">
+              <Group align="self-start" noWrap key={recipe.id}>
+                <Image src={recipe.imageUrl} width={70} height={100} />
                 <div>
                   <Highlight
-                    highlight={recipesState.ingredientKeyword}
-                    color="dimmed"
-                    fz="sm"
-                    inline
-                    lineClamp={3}
+                    highlight={[
+                      hiraToKata(recipesState.titleKeyword),
+                      kataToHira(recipesState.titleKeyword),
+                    ]}
+                    lineClamp={1}
                   >
-                    {joinIngredientText(recipe.ingredients)}
+                    {recipe.title}
                   </Highlight>
+                  <div>
+                    <Highlight
+                      highlight={ingredientKeywords}
+                      color="dimmed"
+                      fz="sm"
+                      inline
+                      lineClamp={3}
+                    >
+                      {joinIngredientText(recipe.ingredients)}
+                    </Highlight>
+                  </div>
+
+                  <Space h={6} />
+
+                  <Group spacing={2} position="right" align="center">
+                    <Button
+                      className="active:translate-y-0"
+                      classNames={{ icon: "mr-1" }}
+                      color="dark"
+                      size="xs"
+                      variant="subtle"
+                      leftIcon={<IconArrowsMaximize size={14} />}
+                      compact
+                      onClick={() => handleOpen(recipe)}
+                    >
+                      全てを表示
+                    </Button>
+                    <Button
+                      className="active:translate-y-0"
+                      classNames={{ icon: "mr-1" }}
+                      color="yellow"
+                      size="xs"
+                      variant="subtle"
+                      leftIcon={<IconExternalLink size={14} />}
+                      compact
+                      component="a"
+                      href={`https://cookpad.com/recipe/${recipe.siteId}`}
+                      target="_blank"
+                    >
+                      外部ページへ
+                    </Button>
+                  </Group>
                 </div>
-
-                <Space h={6} />
-
-                <Group spacing={2} position="right" align="center">
-                  <Button
-                    className="active:translate-y-0"
-                    classNames={{ icon: "mr-1" }}
-                    color="dark"
-                    size="xs"
-                    variant="subtle"
-                    leftIcon={<IconArrowsMaximize size={14} />}
-                    compact
-                    onClick={() => handleOpen(recipe)}
-                  >
-                    全てを表示
-                  </Button>
-                  <Button
-                    className="active:translate-y-0"
-                    classNames={{ icon: "mr-1" }}
-                    color="yellow"
-                    size="xs"
-                    variant="subtle"
-                    leftIcon={<IconExternalLink size={14} />}
-                    compact
-                    component="a"
-                    href={`https://cookpad.com/recipe/${recipe.siteId}`}
-                    target="_blank"
-                  >
-                    外部ページへ
-                  </Button>
-                </Group>
-              </div>
-            </Group>
+              </Group>
+            </Card>
           ))}
         </Stack>
       ) : (
@@ -162,25 +201,41 @@ export const IndexBody: FC<Proos> = (props) => {
             <Space h={10} />
 
             <Title order={5}>
-              <Highlight highlight={recipesState.titleKeyword}>
+              <Highlight
+                highlight={[
+                  hiraToKata(recipesState.titleKeyword),
+                  kataToHira(recipesState.titleKeyword),
+                ]}
+              >
                 {recipe.title}
               </Highlight>
             </Title>
 
             <Space h={5} />
 
-            <div>
-              <Text>材料</Text>
-              <Text color="dimmed" fz="sm" inline lineClamp={3}>
-                {recipe.ingredients.map((ingredient, index) => (
-                  <Group key={index} position="apart">
-                    <Highlight highlight={recipesState.ingredientKeyword}>
-                      {ingredient.name}
-                    </Highlight>
-                    <Text>{ingredient.quantity}</Text>
-                  </Group>
-                ))}
-              </Text>
+            <div className="rounded-md border-[1px] border-solid border-gray-300">
+              <Table striped highlightOnHover fontSize="xs">
+                <thead>
+                  <tr>
+                    <th>材料</th>
+                    <th></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {recipe.ingredients.map((ingredient, index) => (
+                    <tr key={index}>
+                      <td>
+                        <Highlight highlight={ingredientKeywords}>
+                          {ingredient.name}
+                        </Highlight>
+                      </td>
+                      <td className="flex justify-end">
+                        {ingredient.quantity}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </Table>
             </div>
           </div>
         )}

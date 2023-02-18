@@ -1,4 +1,15 @@
-import { Button, Group, Modal, Space, TextInput } from "@mantine/core";
+import {
+  Alert,
+  Button,
+  Group,
+  Loader,
+  LoadingOverlay,
+  Modal,
+  Space,
+  Stack,
+  Text,
+  TextInput,
+} from "@mantine/core";
 import { IconSearch } from "@tabler/icons";
 import React, { FC, useCallback, useState } from "react";
 
@@ -10,13 +21,14 @@ type Props = {
   initialRecipes: RecipesWithIngredients[];
   recipesState: RecipesState;
   setRecipesState: React.Dispatch<React.SetStateAction<RecipesState>>;
-  ingredientsNames: Ingredient["name"][];
+  ingredientsNames: Required<Pick<Ingredient, "furigana" | "shortName">>[];
 };
 
 const filterRecipes = (
   recipes: RecipesWithIngredients[],
   title: string,
-  selectedIngredients: Ingredient["name"][]
+  selectedIngredients: Required<Pick<Ingredient, "furigana" | "shortName">>[],
+  furiganaTexts: string[] = []
 ) => {
   return recipes.filter((recipe) => {
     const containsTitleKeyword = title ? recipe.title.includes(title) : true;
@@ -24,10 +36,13 @@ const filterRecipes = (
     const hasIngredient = selectedIngredients.length
       ? selectedIngredients.every((selectedIngredient) => {
           return recipe.ingredients.some((ingredient) =>
-            ingredient.name.includes(selectedIngredient)
+            ingredient.furigana
+              ? ingredient.furigana.includes(selectedIngredient.furigana)
+              : false
           );
         })
       : true;
+
     return containsTitleKeyword && hasIngredient;
   });
 };
@@ -35,7 +50,10 @@ const filterRecipes = (
 export const SearchButton: FC<Props> = (props) => {
   const [opened, setOpened] = useState(false);
   const [title, setTitle] = useState("");
-  const [selectedIngredients, setSelectedIngredients] = useState<string[]>([]);
+  const [selectedIngredients, setSelectedIngredients] = useState<
+    Required<Pick<Ingredient, "furigana" | "shortName">>[]
+  >([]);
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleOpen = useCallback(() => {
     setOpened(true);
@@ -54,11 +72,6 @@ export const SearchButton: FC<Props> = (props) => {
     }
   }, [props, selectedIngredients, title]);
 
-  const handleOnChange: React.ChangeEventHandler<HTMLInputElement> =
-    useCallback((event) => {
-      setTitle(event.currentTarget.value);
-    }, []);
-
   const handleClear = useCallback(() => {
     setTitle("");
     setSelectedIngredients([]);
@@ -69,26 +82,23 @@ export const SearchButton: FC<Props> = (props) => {
     });
   }, [props]);
 
-  const handleSubmit: React.FormEventHandler<HTMLFormElement> = useCallback(
-    (event) => {
-      event.preventDefault();
+  const handleSubmit = useCallback(async (): Promise<void> => {
+    setIsLoading(true);
+    const filteredRecipes = filterRecipes(
+      props.initialRecipes,
+      title,
+      selectedIngredients
+    );
 
-      const filteredRecipes = filterRecipes(
-        props.initialRecipes,
-        title,
-        selectedIngredients
-      );
+    props.setRecipesState({
+      data: filteredRecipes,
+      titleKeyword: title,
+      ingredientKeyword: selectedIngredients,
+    });
 
-      props.setRecipesState({
-        data: filteredRecipes,
-        titleKeyword: title,
-        ingredientKeyword: selectedIngredients,
-      });
-
-      setOpened(false);
-    },
-    [title, selectedIngredients, props]
-  );
+    setOpened(false);
+    setIsLoading(false);
+  }, [title, selectedIngredients, props]);
 
   return (
     <>
@@ -108,12 +118,14 @@ export const SearchButton: FC<Props> = (props) => {
         title="レシピ検索"
         opened={opened}
         onClose={() => setOpened(false)}
+        closeOnClickOutside={!isLoading}
       >
-        <form className="space-y-2" onSubmit={handleSubmit}>
+        <Stack spacing="xs">
           <TextInput
             classNames={{ input: "text-base placeholder:text-sm" }}
             value={title}
-            onChange={handleOnChange}
+            onChange={(e) => setTitle(e.target.value)}
+            variant="filled"
             label="タイトル"
             placeholder="料理名で探す"
             icon={<IconSearch size={16} />}
@@ -133,11 +145,30 @@ export const SearchButton: FC<Props> = (props) => {
               クリア
             </Button>
 
-            <Button type="submit" color="yellow" size="xs">
+            <Button
+              type="submit"
+              color="yellow"
+              size="xs"
+              onClick={() => handleSubmit()}
+            >
               検索
             </Button>
           </Group>
-        </form>
+        </Stack>
+        <LoadingOverlay
+          visible={isLoading}
+          loader={
+            <Alert color="yellow">
+              <Group position="center">
+                <Loader size="sm" color="yellow" />
+              </Group>
+
+              <Text mt={5} fw={800} color="orange">
+                loading...
+              </Text>
+            </Alert>
+          }
+        />
       </Modal>
     </>
   );

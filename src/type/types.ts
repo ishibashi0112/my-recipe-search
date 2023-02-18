@@ -1,6 +1,8 @@
 export type Ingredient = {
   name: string;
   quantity: string;
+  shortName?: string;
+  furigana?: string;
 };
 
 export type Ingredients = {
@@ -22,5 +24,10 @@ export type RecipesWithIngredients = Recipes & {
 export type RecipesState = {
   data: RecipesWithIngredients[];
   titleKeyword: string;
-  ingredientKeyword: string[];
+  ingredientKeyword: Required<Pick<Ingredient, "furigana" | "shortName">>[];
+};
+
+export type AnalyzedIngredientsName = {
+  name: string;
+  furigana: string;
 };

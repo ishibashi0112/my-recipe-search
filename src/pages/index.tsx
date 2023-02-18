@@ -10,48 +10,53 @@ export const getStaticProps: GetStaticProps = async () => {
   const recipes = await getRecipes();
   const ingredients = await getIngredients();
 
-  const ingredientsNames = ingredients.reduce(
-    (prev: Ingredient["name"][], current: Ingredients) => {
-      const ingredientNames = current.ingredients.map((ingredient) =>
-        ingredient.name.trim()
+  const allIngredients = ingredients.reduce(
+    (
+      prev: Required<Pick<Ingredient, "furigana" | "shortName">>[],
+      current: Ingredients
+    ) => {
+      const ingredientsNames = current.ingredients.reduce(
+        (
+          prev: Required<Pick<Ingredient, "furigana" | "shortName">>[],
+          current: Ingredient
+        ) => {
+          if (
+            typeof current.furigana === "undefined" ||
+            typeof current.shortName === "undefined"
+          ) {
+            return [...prev];
+          }
+
+          return [
+            ...prev,
+            { shortName: current.shortName, furigana: current.furigana },
+          ];
+        },
+        []
       );
 
-      const replacedIngredientNames = ingredientNames.map((ingredientName) => {
-        return (
-          ingredientName
-            // 括弧とその括弧の中のテキストを削除
-            .replace(/[\(\（](.*)[\)\）]/, "")
-            //平仮名・カタカナ・漢字・"ー"以外のテキストを削除。
-            .replace(
-              /[^\u3041-\u3096\u30A1-\u30F6\u3400-\u4DBF\u4E00-\u9FFF\uFF66-\uFF9F\uFF10-\uFF19\uFF21-\uFF3A\uFF41-\uFF5A\uFF01-\uFF5E\uFF61-\uFF9F\u30FC]/g,
-              ""
-            )
-        );
-      });
-
-      const filterIngredientNames = replacedIngredientNames.filter(
-        (ingredientName) => {
-          if (!ingredientName) return false;
-          return !prev.includes(ingredientName);
-        }
-      );
-
-      return [...prev, ...filterIngredientNames];
+      return [...prev, ...ingredientsNames];
     },
     []
   );
 
+  const uniqueIngredients = Array.from(
+    new Map(
+      allIngredients.map((ingredient) => [ingredient.furigana, ingredient])
+    ).values()
+  );
+
   return {
-    props: { recipes, ingredientsNames },
+    props: { recipes, ingredientsNames: uniqueIngredients },
   };
 };
 
-type Proos = {
+type Props = {
   recipes: RecipesWithIngredients[];
-  ingredientsNames: Ingredient["name"][];
+  ingredientsNames: Required<Pick<Ingredient, "furigana" | "shortName">>[];
 };
 
-const Home: NextPage<Proos> = (props) => {
+const Home: NextPage<Props> = (props) => {
   return (
     <Layout>
       <IndexBody {...props} />

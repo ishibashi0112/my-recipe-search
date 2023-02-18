@@ -1,208 +1,223 @@
 import {
+  Autocomplete,
+  AutocompleteItem,
   Badge,
   Button,
   Card,
   CloseButton,
-  Divider,
   Group,
-  NavLink,
-  ScrollArea,
-  Stack,
+  SelectItemProps,
+  Space,
+  Table,
   Text,
-  TextInput,
 } from "@mantine/core";
-import { IconPlus, IconSearch } from "@tabler/icons";
-import React, { FC, useCallback, useRef, useState, useTransition } from "react";
+import { IconSearch } from "@tabler/icons";
+import React, {
+  FC,
+  forwardRef,
+  memo,
+  useCallback,
+  useMemo,
+  useState,
+} from "react";
 
+import { hasExactMatchText, hasPartialMatchText } from "@/lib/util/functions";
 import { Ingredient } from "@/type/types";
 
 type Props = {
-  IngredientsNames: Ingredient["name"][];
-  selectedIngredients: Ingredient["name"][];
-  setSelectedIngredients: React.Dispatch<React.SetStateAction<string[]>>;
+  IngredientsNames: Required<Pick<Ingredient, "furigana" | "shortName">>[];
+  selectedIngredients: Required<Pick<Ingredient, "furigana" | "shortName">>[];
+  setSelectedIngredients: React.Dispatch<
+    React.SetStateAction<Required<Pick<Ingredient, "furigana" | "shortName">>[]>
+  >;
 };
 
-const hiraToKata = (str: string): string => {
-  return str.replace(/[\u3041-\u3096]/g, (ch) =>
-    String.fromCharCode(ch.charCodeAt(0) + 0x60)
+export const IngredientsForm: FC<Props> = memo((props) => {
+  const [value, setValue] = useState("");
+  const [currentIngredients, setCurrentIngredients] = useState(
+    props.IngredientsNames
   );
-};
-const kanaToHira = (str: string): string => {
-  return str.replace(/[\u3041-\u3096]/g, (ch) =>
-    String.fromCharCode(ch.charCodeAt(0) - 0x60)
-  );
-};
 
-export const IngredientsForm: FC<Props> = React.memo((props) => {
-  const [isPending, startTransition] = useTransition();
-  const ref = useRef<HTMLInputElement | null>(null);
-  const [ingredients, setIngredients] = useState(props.IngredientsNames);
+  const selectData = useMemo(
+    () =>
+      currentIngredients.map((ingredient) => ({
+        value: ingredient.furigana,
+        label: ingredient.shortName,
+      })),
+    [currentIngredients]
+  );
 
   const isSelected = useCallback(
     (IngredientName: string): boolean =>
-      props.selectedIngredients.includes(IngredientName),
+      props.selectedIngredients.some(
+        (Ingredient) => Ingredient.furigana === IngredientName
+      ),
     [props.selectedIngredients]
   );
 
-  const handleSelect = useCallback((IngredientName: string) => {
-    props.setSelectedIngredients((prev) => [...prev, IngredientName]);
+  const handleOnChange = useCallback((value: string) => {
+    setValue(value);
+    setCurrentIngredients((prevIngredients) => {
+      const isMatch = prevIngredients.some(
+        (ingredient) => ingredient.furigana === value
+      );
+      if (!isMatch) return prevIngredients;
+
+      const putTargetIngredient = prevIngredients.filter(
+        (Ingredient) => Ingredient.furigana === value
+      );
+
+      const removeTargetIngredient = prevIngredients.filter(
+        (Ingredient) => !(Ingredient.furigana === value)
+      );
+
+      const putTargetValueInFront = [
+        ...putTargetIngredient,
+        ...removeTargetIngredient,
+      ];
+
+      return putTargetValueInFront;
+    });
   }, []);
 
-  const handleSelectAll = useCallback(() => {
-    if (ingredients.length) {
-      props.setSelectedIngredients(ingredients);
+  const handleSelect = useCallback(
+    (item: AutocompleteItem): void => {
+      if (isSelected(item.value)) {
+        setValue("");
+        return;
+      }
+
+      props.setSelectedIngredients((prev) => {
+        const ingredient = {
+          shortName: item.label as string,
+          furigana: item.value,
+        };
+
+        return [...prev, ingredient];
+      });
+
+      setValue("");
+    },
+    [props.selectedIngredients]
+  );
+
+  const handleRemove = useCallback(
+    (targetIndex: number): void => {
+      props.setSelectedIngredients((prev) =>
+        prev.filter((_, index) => !(index === targetIndex))
+      );
+    },
+    [props]
+  );
+
+  const handleFilter = useCallback(
+    (value: string, item: AutocompleteItem): boolean => {
+      if (!value) return false;
+
+      return hasPartialMatchText(item.value, value);
+    },
+    []
+  );
+
+  const AutoCompleteItem = forwardRef<HTMLDivElement, SelectItemProps>(
+    function AutoCompleteItem({ value: itemValue, label, ...others }, ref) {
+      const IngredientName = itemValue ? itemValue : "";
+      return (
+        <div ref={ref} {...others}>
+          <Group color="yellow" position="apart" noWrap>
+            <Text>{label}</Text>
+            {isSelected(IngredientName) ? (
+              <Badge color="gray">選択済み</Badge>
+            ) : isSelected(value) &&
+              hasPartialMatchText(IngredientName, value) ? (
+              <Badge color="gray">部分一致</Badge>
+            ) : hasExactMatchText(IngredientName, value) ? (
+              <Badge color="yellow">完全一致</Badge>
+            ) : null}
+          </Group>
+        </div>
+      );
     }
-  }, [ingredients]);
-
-  const handleRemove = useCallback((targetIndex: number): void => {
-    props.setSelectedIngredients((prev) =>
-      prev.filter((_, index) => !(index === targetIndex))
-    );
-  }, []);
-
-  const handleRemoveAll = useCallback((): void => {
-    props.setSelectedIngredients([]);
-  }, []);
-
-  const handleTextClear = useCallback(() => {
-    if (ref.current) ref.current.value = "";
-    setIngredients(props.IngredientsNames);
-  }, [props.IngredientsNames]);
-
-  const handleOnChange: React.ChangeEventHandler<HTMLInputElement> =
-    useCallback(
-      (event) => {
-        const text = event.currentTarget.value;
-        const filteredIngredients = props.IngredientsNames.filter(
-          (IngredientsName) => {
-            //平仮名のみテキストは、カタカナも検索結果に含める
-            if (/^[ぁ-ん]+$/.test(text)) {
-              const toKataText = hiraToKata(text);
-              const targetTexts = [text, toKataText];
-              return targetTexts.some((txt) => IngredientsName.includes(txt));
-            }
-            //カタカナのみテキストは、平仮名も検索結果に含める
-            if (/^[ァ-ヶ]+$/.test(text)) {
-              const toHiraText = kanaToHira(text);
-              const targetTexts = [text, toHiraText];
-              return targetTexts.some((txt) => IngredientsName.includes(txt));
-            }
-
-            return IngredientsName.includes(text);
-          }
-        );
-        setIngredients(filteredIngredients);
-      },
-      [props.IngredientsNames]
-    );
+  );
 
   return (
     <div>
-      <Text mb={1} fz="sm">
-        材料
-      </Text>
-      <Card p={0} withBorder>
-        <div>
-          <Group className="pr-2">
-            <TextInput
-              className="flex-1 "
-              classNames={{ input: "text-base placeholder:text-sm" }}
-              ref={ref}
-              onChange={handleOnChange}
-              variant="unstyled"
-              placeholder="材料を絞り込む"
-              icon={<IconSearch size={16} />}
-              autoComplete={"off"}
-              rightSection={
-                ref.current?.value ? (
-                  <CloseButton
-                    className=" active:translate-y-0"
-                    size="sm"
-                    onClick={handleTextClear}
-                  />
-                ) : null
-              }
+      <Autocomplete
+        className="flex-1"
+        classNames={{ input: "text-base placeholder:text-sm" }}
+        value={value}
+        onChange={handleOnChange}
+        variant="filled"
+        label="材料"
+        description="※平仮名での検索をお願いします。"
+        placeholder="材料を絞り込む"
+        icon={<IconSearch size={16} />}
+        autoComplete={"off"}
+        rightSection={
+          value ? (
+            <CloseButton
+              className=" active:translate-y-0"
+              size="sm"
+              onClick={() => setValue("")}
             />
-            <Button
-              className="border-none active:translate-y-0"
-              variant="default"
-              color="gray"
-              size="xs"
-              compact
-              disabled={!ref.current?.value.length}
-              onClick={handleSelectAll}
-            >
-              全て選択
-            </Button>
-          </Group>
-          <Divider />
+          ) : null
+        }
+        data={selectData}
+        onItemSubmit={handleSelect}
+        nothingFound={
+          <Text align="center" fz="xs" color="dimmed">
+            検索された材料はありません。
+          </Text>
+        }
+        filter={handleFilter}
+        itemComponent={AutoCompleteItem}
+      />
 
-          <ScrollArea className="p-2" style={{ height: 150 }} type="always">
-            <Stack spacing={1}>
-              {ingredients.length ? (
-                ingredients.map((IngredientName, index) => (
-                  <NavLink
-                    className="p-1 active:bg-gray-100"
-                    label={IngredientName}
-                    onClick={() => handleSelect(IngredientName)}
-                    key={index}
-                    icon={<IconPlus size={16} />}
-                    component="button"
-                    disabled={isSelected(IngredientName)}
-                    rightSection={
-                      isSelected(IngredientName) ? (
-                        <Badge color="gray">選択済み</Badge>
-                      ) : null
-                    }
-                  />
-                ))
-              ) : (
-                <Text className="mt-10" align="center" fz="xs" color="dimmed">
-                  検索された材料はありません。
-                </Text>
-              )}
-            </Stack>
-          </ScrollArea>
-        </div>
+      <Space h={7} />
 
-        <Divider />
-
-        <div className="min-h-[200px] p-2">
-          <Group position="apart">
-            <Text fz="xs">
-              選択中 {`${props.selectedIngredients.length}点`}
-            </Text>
-            <Button
-              className="border-none"
-              size="xs"
-              variant="default"
-              compact
-              onClick={handleRemoveAll}
-            >
-              全て削除
-            </Button>
-          </Group>
-          {props.selectedIngredients.length ? (
-            <Stack spacing={1}>
-              {props.selectedIngredients.map((IngredientName, index) => (
-                <Group
-                  className="flex justify-between hover:bg-gray-100 "
-                  key={index}
+      <Card className="overflow-visible" p={0}>
+        <Table fontSize="xs" highlightOnHover striped>
+          <thead>
+            <tr>
+              <th>選択中 {`${props.selectedIngredients.length}点`}</th>
+              <th className="flex justify-end">
+                <Button
+                  className="border-none"
+                  size="xs"
+                  variant="default"
+                  compact
+                  onClick={() => props.setSelectedIngredients([])}
                 >
-                  <Text fz="sm">{IngredientName}</Text>
-                  <CloseButton
-                    className="active:translate-y-0"
-                    onClick={() => handleRemove(index)}
-                  />
-                </Group>
+                  全て削除
+                </Button>
+              </th>
+            </tr>
+          </thead>
+
+          {props.selectedIngredients.length ? (
+            <tbody>
+              {props.selectedIngredients.map((Ingredient, index) => (
+                <tr key={index}>
+                  <td>{Ingredient.shortName}</td>
+                  <td className="flex justify-end">
+                    <CloseButton
+                      className="active:translate-y-0"
+                      onClick={() => handleRemove(index)}
+                    />
+                  </td>
+                </tr>
               ))}
-            </Stack>
+            </tbody>
           ) : (
-            <Text className="mt-10" align="center" fz="xs" color="dimmed">
-              選択中の材料はありません。
-            </Text>
+            <tbody className="h-10">
+              <tr>
+                <td className="text-gray-400 " colSpan={2}>
+                  選択中の材料はありません。
+                </td>
+              </tr>
+            </tbody>
           )}
-        </div>
+        </Table>
       </Card>
     </div>
   );
