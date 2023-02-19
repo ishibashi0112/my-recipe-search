@@ -4,25 +4,26 @@ import {
   Card,
   Group,
   Highlight,
-  Image,
+  // Image,
   Modal,
   Space,
   Stack,
   Table,
-  Text,
   Title,
 } from "@mantine/core";
 import {
   IconArrowsMaximize,
   IconExternalLink,
   IconInfoCircle,
-  IconSearch,
 } from "@tabler/icons";
+import Image from "next/image";
 import React, { FC, useCallback, useMemo, useState } from "react";
 
 import { hiraToKata, kataToHira } from "@/lib/util/functions";
 import { SearchButton } from "@/pages-component/Index/SearchButton";
 import { Ingredient, RecipesState, RecipesWithIngredients } from "@/type/types";
+
+import { StateBar } from "./StateBar";
 
 type Proos = {
   recipes: RecipesWithIngredients[];
@@ -80,40 +81,11 @@ export const IndexBody: FC<Proos> = (props) => {
 
   return (
     <div>
-      {recipesState.data.length !== initialRecipes.length ? (
-        <Alert className="mb-2" color="yellow" icon={<IconSearch size={16} />}>
-          <Group position="apart">
-            <Text fz="sm">{`検索結果 : ${recipesState.data.length}件`}</Text>
-            <Button
-              className="active:translate-y-0"
-              variant="outline"
-              color="yellow"
-              size="xs"
-              compact
-              onClick={() =>
-                setRecipesState({
-                  data: initialRecipes,
-                  titleKeyword: "",
-                  ingredientKeyword: [],
-                })
-              }
-            >
-              クリア
-            </Button>
-          </Group>
-
-          {recipesState.titleKeyword && (
-            <Text fz="sm">{`タイトル : ${recipesState.titleKeyword}`}</Text>
-          )}
-          {recipesState.ingredientKeyword.length ? (
-            <Text fz="sm">{`材料 : ${recipesState.ingredientKeyword.map(
-              (ingredient) => `${ingredient.shortName}`
-            )}`}</Text>
-          ) : null}
-        </Alert>
-      ) : (
-        <Text fz="sm">{`レシピ総数 ${initialRecipes.length}件`}</Text>
-      )}
+      <StateBar
+        initialRecipes={initialRecipes}
+        recipesState={recipesState}
+        setRecipesState={setRecipesState}
+      />
 
       <Space h={5} />
 
@@ -122,7 +94,13 @@ export const IndexBody: FC<Proos> = (props) => {
           {recipesState.data.map((recipe) => (
             <Card key={recipe.id} withBorder shadow="xs" p="xs">
               <Group align="self-start" noWrap key={recipe.id}>
-                <Image src={recipe.imageUrl} width={70} height={100} />
+                {/* <Image src={recipe.imageUrl} width={70} height={100} /> */}
+                <Image
+                  src={recipe.imageUrl}
+                  alt="recipe-image"
+                  width={70}
+                  height={100}
+                />
                 <div>
                   <Highlight
                     highlight={[
@@ -158,7 +136,7 @@ export const IndexBody: FC<Proos> = (props) => {
                       compact
                       onClick={() => handleOpen(recipe)}
                     >
-                      全てを表示
+                      全て表示
                     </Button>
                     <Button
                       className="active:translate-y-0"
