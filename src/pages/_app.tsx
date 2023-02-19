@@ -12,6 +12,7 @@ const App = ({ Component, pageProps }: AppProps) => {
     <>
       <Head>
         <title>my-recipe-search</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
       </Head>
 
       <MantineProvider
