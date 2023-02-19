@@ -27,8 +27,7 @@ type Props = {
 const filterRecipes = (
   recipes: RecipesWithIngredients[],
   title: string,
-  selectedIngredients: Required<Pick<Ingredient, "furigana" | "shortName">>[],
-  furiganaTexts: string[] = []
+  selectedIngredients: Required<Pick<Ingredient, "furigana" | "shortName">>[]
 ) => {
   return recipes.filter((recipe) => {
     const containsTitleKeyword = title ? recipe.title.includes(title) : true;
