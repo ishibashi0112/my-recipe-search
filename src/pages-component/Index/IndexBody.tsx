@@ -4,12 +4,8 @@ import {
   Card,
   Group,
   Highlight,
-  // Image,
-  Modal,
   Space,
   Stack,
-  Table,
-  Title,
 } from "@mantine/core";
 import {
   IconArrowsMaximize,
@@ -23,9 +19,10 @@ import { hiraToKata, kataToHira } from "@/lib/util/functions";
 import { SearchButton } from "@/pages-component/Index/SearchButton";
 import { Ingredient, RecipesState, RecipesWithIngredients } from "@/type/types";
 
+import { ShowRecipeModal } from "./ShowRecipeModal";
 import { StateBar } from "./StateBar";
 
-type Proos = {
+type Props = {
   recipes: RecipesWithIngredients[];
   ingredientsNames: Required<Pick<Ingredient, "furigana" | "shortName">>[];
 };
@@ -36,7 +33,7 @@ const joinIngredientText = (ingredients: Ingredient[]) => {
   return "材料: " + joinText;
 };
 
-export const IndexBody: FC<Proos> = (props) => {
+export const IndexBody: FC<Props> = (props) => {
   const initialRecipes = props.recipes;
   const [opened, setOpened] = useState(false);
   const [recipe, setRecipe] = useState<RecipesWithIngredients | null>(null);
@@ -94,7 +91,6 @@ export const IndexBody: FC<Proos> = (props) => {
           {recipesState.data.map((recipe) => (
             <Card key={recipe.id} withBorder shadow="xs" p="xs">
               <Group align="self-start" noWrap key={recipe.id}>
-                {/* <Image src={recipe.imageUrl} width={70} height={100} /> */}
                 <Image
                   src={recipe.imageUrl}
                   alt="recipe-image"
@@ -164,60 +160,13 @@ export const IndexBody: FC<Proos> = (props) => {
         </Alert>
       )}
 
-      <Modal opened={opened} onClose={() => setOpened(false)}>
-        {recipe && (
-          <div>
-            <Group position="center">
-              <Image
-                src={recipe.imageUrl}
-                width={150}
-                height={200}
-                alt="recipe_image"
-              />
-            </Group>
-
-            <Space h={10} />
-
-            <Title order={5}>
-              <Highlight
-                highlight={[
-                  hiraToKata(recipesState.titleKeyword),
-                  kataToHira(recipesState.titleKeyword),
-                ]}
-              >
-                {recipe.title}
-              </Highlight>
-            </Title>
-
-            <Space h={5} />
-
-            <div className="rounded-md border-[1px] border-solid border-gray-300">
-              <Table striped highlightOnHover fontSize="xs">
-                <thead>
-                  <tr>
-                    <th>材料</th>
-                    <th></th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {recipe.ingredients.map((ingredient, index) => (
-                    <tr key={index}>
-                      <td>
-                        <Highlight highlight={ingredientKeywords}>
-                          {ingredient.name}
-                        </Highlight>
-                      </td>
-                      <td className="flex justify-end">
-                        {ingredient.quantity}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </Table>
-            </div>
-          </div>
-        )}
-      </Modal>
+      <ShowRecipeModal
+        opened={opened}
+        setOpened={setOpened}
+        recipe={recipe}
+        titleKeyword={recipesState.titleKeyword}
+        ingredientKeywords={ingredientKeywords}
+      />
 
       <SearchButton
         initialRecipes={initialRecipes}
