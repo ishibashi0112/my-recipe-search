@@ -17,7 +17,9 @@ export const Layout: FC<Props> = ({ children }) => {
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <link rel="icon" href="/favicon.ico" />
       </Head>
-      <AppShell header={<Header />}>{children}</AppShell>
+      <AppShell header={<Header />} fixed={false}>
+        {children}
+      </AppShell>
     </div>
   );
 };
