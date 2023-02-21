@@ -24,7 +24,7 @@ export const useSsrRouterLoading = () => {
 
   const loadingComponent = (
     <Alert
-      className="absolute top-3 left-1/2"
+      className="fixed top-3 left-1/2"
       style={{ transform: "translateX(-50%)" }}
       color="yellow"
     >
