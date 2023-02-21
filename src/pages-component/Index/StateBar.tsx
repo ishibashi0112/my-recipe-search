@@ -1,23 +1,25 @@
 import { ActionIcon, Alert, Button, Group, Text } from "@mantine/core";
 import { IconChevronDown, IconChevronUp, IconSearch } from "@tabler/icons";
 import React, { FC, useState } from "react";
+import { useSnapshot } from "valtio";
 
-import { RecipesState, RecipesWithIngredients } from "@/type/types";
+import { searchState, setSearchState } from "@/lib/store/state";
+import { RecipesWithIngredients } from "@/type/types";
 
 type Proos = {
   initialRecipes: RecipesWithIngredients[];
-  recipesState: RecipesState;
-  setRecipesState: React.Dispatch<React.SetStateAction<RecipesState>>;
 };
 
 export const StateBar: FC<Proos> = (props) => {
   const [isDisplay, setIsDisplay] = useState(true);
+  const { title, selectedIngredients, searchedRecipes } =
+    useSnapshot(searchState);
 
-  if (props.recipesState.data.length === props.initialRecipes.length) {
+  if (!searchedRecipes.length) {
     return <Text fz="sm">{`レシピ総数 ${props.initialRecipes.length}件`}</Text>;
   }
 
-  if (isDisplay) {
+  if (isDisplay && searchedRecipes.length) {
     return (
       <Alert
         className="sticky top-2 z-50 mb-2 shadow-md"
@@ -25,7 +27,7 @@ export const StateBar: FC<Proos> = (props) => {
         icon={<IconSearch size={16} />}
       >
         <Group position="apart">
-          <Text fz="sm">{`検索結果 : ${props.recipesState.data.length}件`}</Text>
+          <Text fz="sm">{`検索結果 : ${searchedRecipes.length}件`}</Text>
           <Group spacing="xs">
             <Button
               className="active:translate-y-0"
@@ -33,13 +35,7 @@ export const StateBar: FC<Proos> = (props) => {
               color="yellow"
               size="xs"
               compact
-              onClick={() =>
-                props.setRecipesState({
-                  data: props.initialRecipes,
-                  titleKeyword: "",
-                  ingredientKeyword: [],
-                })
-              }
+              onClick={() => setSearchState([], "", [])}
             >
               クリア
             </Button>
@@ -54,11 +50,9 @@ export const StateBar: FC<Proos> = (props) => {
           </Group>
         </Group>
 
-        {props.recipesState.titleKeyword && (
-          <Text fz="sm">{`タイトル : ${props.recipesState.titleKeyword}`}</Text>
-        )}
-        {props.recipesState.ingredientKeyword.length ? (
-          <Text fz="sm">{`材料 : ${props.recipesState.ingredientKeyword.map(
+        {title && <Text fz="sm">{`タイトル : ${title}`}</Text>}
+        {selectedIngredients.length ? (
+          <Text fz="sm">{`材料 : ${selectedIngredients.map(
             (ingredient) => `${ingredient.shortName}`
           )}`}</Text>
         ) : null}

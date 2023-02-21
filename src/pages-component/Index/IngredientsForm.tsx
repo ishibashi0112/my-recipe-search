@@ -22,13 +22,13 @@ import React, {
 } from "react";
 
 import { hasExactMatchText, hasPartialMatchText } from "@/lib/util/functions";
-import { Ingredient } from "@/type/types";
+import { IngredientsName } from "@/type/types";
 
 type Props = {
-  IngredientsNames: Required<Pick<Ingredient, "furigana" | "shortName">>[];
-  selectedIngredients: Required<Pick<Ingredient, "furigana" | "shortName">>[];
+  IngredientsNames: IngredientsName[];
+  selectedIngredients: IngredientsName[];
   setSelectedIngredients: React.Dispatch<
-    React.SetStateAction<Required<Pick<Ingredient, "furigana" | "shortName">>[]>
+    React.SetStateAction<IngredientsName[]>
   >;
 };
 

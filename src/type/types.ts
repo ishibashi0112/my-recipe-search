@@ -21,10 +21,14 @@ export type RecipesWithIngredients = Recipes & {
   ingredients: Ingredient[];
 };
 
-export type RecipesState = {
-  data: RecipesWithIngredients[];
-  titleKeyword: string;
-  ingredientKeyword: Required<Pick<Ingredient, "furigana" | "shortName">>[];
+export type IngredientsName = Required<
+  Pick<Ingredient, "furigana" | "shortName">
+>;
+
+export type SearchState = {
+  searchedRecipes: RecipesWithIngredients[];
+  title: string;
+  selectedIngredients: IngredientsName[];
 };
 
 export type AnalyzedIngredientsName = {

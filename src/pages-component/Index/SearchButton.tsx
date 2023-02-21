@@ -1,103 +1,18 @@
-import {
-  Alert,
-  Button,
-  Group,
-  Loader,
-  LoadingOverlay,
-  Modal,
-  Space,
-  Stack,
-  Text,
-  TextInput,
-} from "@mantine/core";
+import { Button, Drawer } from "@mantine/core";
 import { IconSearch } from "@tabler/icons";
-import React, { FC, useCallback, useState } from "react";
+import React, { FC, useState } from "react";
 
-import { Ingredient, RecipesState, RecipesWithIngredients } from "@/type/types";
+import { IngredientsName, RecipesWithIngredients } from "@/type/types";
 
-import { IngredientsForm } from "./IngredientsForm";
+import { SearchForm } from "./SearchForm";
 
 type Props = {
   initialRecipes: RecipesWithIngredients[];
-  recipesState: RecipesState;
-  setRecipesState: React.Dispatch<React.SetStateAction<RecipesState>>;
-  ingredientsNames: Required<Pick<Ingredient, "furigana" | "shortName">>[];
-};
-
-const filterRecipes = (
-  recipes: RecipesWithIngredients[],
-  title: string,
-  selectedIngredients: Required<Pick<Ingredient, "furigana" | "shortName">>[]
-) => {
-  return recipes.filter((recipe) => {
-    const containsTitleKeyword = title ? recipe.title.includes(title) : true;
-
-    const hasIngredient = selectedIngredients.length
-      ? selectedIngredients.every((selectedIngredient) => {
-          return recipe.ingredients.some((ingredient) =>
-            ingredient.furigana
-              ? ingredient.furigana.includes(selectedIngredient.furigana)
-              : false
-          );
-        })
-      : true;
-
-    return containsTitleKeyword && hasIngredient;
-  });
+  ingredientsNames: IngredientsName[];
 };
 
 export const SearchButton: FC<Props> = (props) => {
   const [opened, setOpened] = useState(false);
-  const [title, setTitle] = useState("");
-  const [selectedIngredients, setSelectedIngredients] = useState<
-    Required<Pick<Ingredient, "furigana" | "shortName">>[]
-  >([]);
-  const [isLoading, setIsLoading] = useState(false);
-
-  const handleOpen = useCallback(() => {
-    setOpened(true);
-
-    if (
-      props.recipesState.data.length === props.initialRecipes.length &&
-      selectedIngredients.length > 0
-    ) {
-      setSelectedIngredients([]);
-    }
-    if (
-      props.recipesState.data.length === props.initialRecipes.length &&
-      title
-    ) {
-      setTitle("");
-    }
-  }, [props, selectedIngredients, title]);
-
-  const handleClear = useCallback(() => {
-    setTitle("");
-    setSelectedIngredients([]);
-    props.setRecipesState({
-      data: props.initialRecipes,
-      titleKeyword: "",
-      ingredientKeyword: [],
-    });
-  }, [props]);
-
-  const handleSubmit = useCallback(async (): Promise<void> => {
-    setIsLoading(true);
-    const filteredRecipes = filterRecipes(
-      props.initialRecipes,
-      title,
-      selectedIngredients
-    );
-
-    props.setRecipesState({
-      data: filteredRecipes,
-      titleKeyword: title,
-      ingredientKeyword: selectedIngredients,
-    });
-
-    setOpened(false);
-    setIsLoading(false);
-  }, [title, selectedIngredients, props]);
 
   return (
     <>
@@ -107,68 +22,30 @@ export const SearchButton: FC<Props> = (props) => {
         radius="xl"
         size="md"
         leftIcon={<IconSearch size={16} />}
-        onClick={() => handleOpen()}
+        onClick={() => setOpened(true)}
       >
         検索
       </Button>
 
-      <Modal
-        classNames={{ title: " font-semibold  font-serif" }}
+      <Drawer
+        classNames={{
+          title: " font-semibold  font-serif",
+          drawer: "rounded-t-lg pt-5",
+        }}
         title="レシピ検索"
+        size="75%"
+        padding="sm"
         opened={opened}
         onClose={() => setOpened(false)}
-        closeOnClickOutside={!isLoading}
+        position="bottom"
+        overlayOpacity={0.3}
       >
-        <Stack spacing="xs">
-          <TextInput
-            classNames={{ input: "text-base placeholder:text-sm" }}
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            variant="filled"
-            label="タイトル"
-            placeholder="料理名で探す"
-            icon={<IconSearch size={16} />}
-            autoComplete={"off"}
-          />
+        <div className="absolute top-2 flex h-3 w-screen items-center justify-center">
+          <div className="h-1 w-20 -translate-x-1/2 rounded-xl bg-gray-400" />
+        </div>
 
-          <IngredientsForm
-            IngredientsNames={props.ingredientsNames}
-            selectedIngredients={selectedIngredients}
-            setSelectedIngredients={setSelectedIngredients}
-          />
-
-          <Space h={5} />
-
-          <Group position="right" spacing="sm">
-            <Button onClick={handleClear} variant="default" size="xs">
-              クリア
-            </Button>
-
-            <Button
-              type="submit"
-              color="yellow"
-              size="xs"
-              onClick={() => handleSubmit()}
-            >
-              検索
-            </Button>
-          </Group>
-        </Stack>
-        <LoadingOverlay
-          visible={isLoading}
-          loader={
-            <Alert color="yellow">
-              <Group position="center">
-                <Loader size="sm" color="yellow" />
-              </Group>
-
-              <Text mt={5} fw={800} color="orange">
-                loading...
-              </Text>
-            </Alert>
-          }
-        />
-      </Modal>
+        <SearchForm setOpened={setOpened} {...props} />
+      </Drawer>
     </>
   );
 };

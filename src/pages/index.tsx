@@ -4,22 +4,21 @@ import React from "react";
 import { getIngredients, getRecipes } from "@/lib/firebase/firestore";
 import { IndexBody } from "@/pages-component/Index/IndexBody";
 import { Layout } from "@/pages-layout/layout";
-import { Ingredient, Ingredients, RecipesWithIngredients } from "@/type/types";
+import {
+  Ingredient,
+  Ingredients,
+  IngredientsName,
+  RecipesWithIngredients,
+} from "@/type/types";
 
 export const getStaticProps: GetStaticProps = async () => {
   const recipes = await getRecipes();
   const ingredients = await getIngredients();
 
   const allIngredients = ingredients.reduce(
-    (
-      prev: Required<Pick<Ingredient, "furigana" | "shortName">>[],
-      current: Ingredients
-    ) => {
+    (prev: IngredientsName[], current: Ingredients) => {
       const ingredientsNames = current.ingredients.reduce(
-        (
-          prev: Required<Pick<Ingredient, "furigana" | "shortName">>[],
-          current: Ingredient
-        ) => {
+        (prev: IngredientsName[], current: Ingredient) => {
           if (
             typeof current.furigana === "undefined" ||
             typeof current.shortName === "undefined"
@@ -53,7 +52,7 @@ export const getStaticProps: GetStaticProps = async () => {
 
 type Props = {
   recipes: RecipesWithIngredients[];
-  ingredientsNames: Required<Pick<Ingredient, "furigana" | "shortName">>[];
+  ingredientsNames: IngredientsName[];
 };
 
 const Home: NextPage<Props> = (props) => {
