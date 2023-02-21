@@ -39,7 +39,7 @@ export const SearchButton: FC<Props> = (props) => {
       <Drawer
         classNames={{
           title: " font-semibold  font-serif",
-          drawer: "rounded-t-2xl pt-5 transition-all duration-1000",
+          drawer: "rounded-t-2xl pt-5",
           closeButton: "z-50",
         }}
         styles={{
