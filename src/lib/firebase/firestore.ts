@@ -40,3 +40,26 @@ export const getIngredients = async (): Promise<Ingredients[]> => {
 
   return ingredients;
 };
+
+export const getRecipe = async (
+  id: string
+): Promise<RecipesWithIngredients> => {
+  const recipeSnapshot = await adminDB.collection("recipes").doc(id).get();
+  const recipe = recipeSnapshot.data() as Omit<Recipes, "id">;
+
+  const ingredientsSnapshot = await adminDB
+    .collection("ingredients")
+    .doc(recipeSnapshot.id)
+    .get();
+
+  const ingredients = {
+    ...ingredientsSnapshot.data(),
+    id: ingredientsSnapshot.id,
+  } as Ingredients;
+
+  return {
+    ...recipe,
+    id: recipeSnapshot.id,
+    ingredients: ingredients.ingredients,
+  };
+};
