@@ -5,9 +5,11 @@ import type { AppProps } from "next/app";
 import Head from "next/head";
 import React from "react";
 
+import { useSsrRouterLoading } from "@/lib/hook/useSsrRouterLoading";
 import { AuthProvider } from "@/pages-component/login/AuthProvider";
 
 const App = ({ Component, pageProps }: AppProps) => {
+  const { pageLoading, loadingComponent } = useSsrRouterLoading();
   return (
     <>
       <Head>
@@ -24,6 +26,7 @@ const App = ({ Component, pageProps }: AppProps) => {
       >
         <AuthProvider>
           <Component {...pageProps} />
+          {pageLoading && loadingComponent}
         </AuthProvider>
       </MantineProvider>
     </>
