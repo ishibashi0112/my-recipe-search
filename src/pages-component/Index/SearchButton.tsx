@@ -1,9 +1,10 @@
 import { Button, Drawer } from "@mantine/core";
 import { IconSearch } from "@tabler/icons";
-import React, { FC, useState } from "react";
+import React, { FC, useCallback, useState } from "react";
 
 import { IngredientsName, RecipesWithIngredients } from "@/type/types";
 
+import { useSwipeClose } from "./hook/useSwipeClose";
 import { SearchForm } from "./SearchForm";
 
 type Props = {
@@ -13,6 +14,14 @@ type Props = {
 
 export const SearchButton: FC<Props> = (props) => {
   const [opened, setOpened] = useState(false);
+  const { swaipeYState, setSwaipeYState, TouchBarComponent } = useSwipeClose({
+    onClose: () => setOpened(false),
+  });
+
+  const handleOpen = useCallback(() => {
+    setSwaipeYState((prev) => (prev.move > 0 ? { start: 0, move: 0 } : prev));
+    setOpened(true);
+  }, []);
 
   return (
     <>
@@ -22,7 +31,7 @@ export const SearchButton: FC<Props> = (props) => {
         radius="xl"
         size="md"
         leftIcon={<IconSearch size={16} />}
-        onClick={() => setOpened(true)}
+        onClick={() => handleOpen()}
       >
         検索
       </Button>
@@ -30,7 +39,11 @@ export const SearchButton: FC<Props> = (props) => {
       <Drawer
         classNames={{
           title: " font-semibold  font-serif",
-          drawer: "rounded-t-lg pt-5",
+          drawer: "rounded-t-2xl pt-5 transition-all duration-1000",
+          closeButton: "z-50",
+        }}
+        styles={{
+          drawer: { height: `calc(75% - ${swaipeYState.move}px)` },
         }}
         title="レシピ検索"
         size="75%"
@@ -40,9 +53,7 @@ export const SearchButton: FC<Props> = (props) => {
         position="bottom"
         overlayOpacity={0.3}
       >
-        <div className="absolute top-2 flex h-3 w-screen items-center justify-center">
-          <div className="h-1 w-20 -translate-x-1/2 rounded-xl bg-gray-400" />
-        </div>
+        {TouchBarComponent}
 
         <SearchForm setOpened={setOpened} {...props} />
       </Drawer>

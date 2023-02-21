@@ -6,6 +6,7 @@ import {
   Card,
   CloseButton,
   Group,
+  ScrollArea,
   SelectItemProps,
   Space,
   Table,
@@ -176,48 +177,50 @@ export const IngredientsForm: FC<Props> = memo((props) => {
       <Space h={7} />
 
       <Card className="overflow-visible" p={0}>
-        <Table fontSize="xs" highlightOnHover striped>
-          <thead>
-            <tr>
-              <th>選択中 {`${props.selectedIngredients.length}点`}</th>
-              <th className="flex justify-end">
-                <Button
-                  className="border-none"
-                  size="xs"
-                  variant="default"
-                  compact
-                  onClick={() => props.setSelectedIngredients([])}
-                >
-                  全て削除
-                </Button>
-              </th>
-            </tr>
-          </thead>
+        <ScrollArea style={{ height: 300 }} type="always">
+          <Table fontSize="xs" highlightOnHover striped>
+            <thead>
+              <tr>
+                <th>選択中 {`${props.selectedIngredients.length}点`}</th>
+                <th className="flex justify-end">
+                  <Button
+                    className="border-none"
+                    size="xs"
+                    variant="default"
+                    compact
+                    onClick={() => props.setSelectedIngredients([])}
+                  >
+                    全て削除
+                  </Button>
+                </th>
+              </tr>
+            </thead>
 
-          {props.selectedIngredients.length ? (
-            <tbody>
-              {props.selectedIngredients.map((Ingredient, index) => (
-                <tr key={index}>
-                  <td>{Ingredient.shortName}</td>
-                  <td className="flex justify-end">
-                    <CloseButton
-                      className="active:translate-y-0"
-                      onClick={() => handleRemove(index)}
-                    />
+            {props.selectedIngredients.length ? (
+              <tbody>
+                {props.selectedIngredients.map((Ingredient, index) => (
+                  <tr key={index}>
+                    <td>{Ingredient.shortName}</td>
+                    <td className="flex justify-end">
+                      <CloseButton
+                        className="active:translate-y-0"
+                        onClick={() => handleRemove(index)}
+                      />
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            ) : (
+              <tbody className="h-10">
+                <tr>
+                  <td className="text-gray-400 " colSpan={2}>
+                    選択中の材料はありません。
                   </td>
                 </tr>
-              ))}
-            </tbody>
-          ) : (
-            <tbody className="h-10">
-              <tr>
-                <td className="text-gray-400 " colSpan={2}>
-                  選択中の材料はありません。
-                </td>
-              </tr>
-            </tbody>
-          )}
-        </Table>
+              </tbody>
+            )}
+          </Table>
+        </ScrollArea>
       </Card>
     </div>
   );

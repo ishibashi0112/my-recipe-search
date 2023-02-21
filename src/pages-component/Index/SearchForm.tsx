@@ -1,6 +1,6 @@
 import { Button, Group, Space, Stack, TextInput } from "@mantine/core";
 import { IconSearch } from "@tabler/icons";
-import React, { FC, useCallback, useState } from "react";
+import React, { FC, memo, useCallback, useState } from "react";
 import { useSnapshot } from "valtio";
 
 import { searchState, setSearchState } from "@/lib/store/state";
@@ -14,7 +14,7 @@ type Props = {
   setOpened: React.Dispatch<React.SetStateAction<boolean>>;
 };
 
-export const SearchForm: FC<Props> = (props) => {
+export const SearchForm: FC<Props> = memo((props) => {
   const snap = useSnapshot(searchState);
   const prevSelectedIngredients = snap.selectedIngredients as IngredientsName[];
   const [title, setTitle] = useState(snap.title ? snap.title : "");
@@ -73,4 +73,6 @@ export const SearchForm: FC<Props> = (props) => {
       </Stack>
     </>
   );
-};
+});
+
+SearchForm.displayName = "SearchForm";
