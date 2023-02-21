@@ -9,7 +9,11 @@ type Props = {
 
 export const Layout: FC<Props> = ({ children }) => {
   return (
-    <AppShell header={<Header />} fixed={false}>
+    <AppShell
+      classNames={{ body: "bg-gray-50" }}
+      header={<Header />}
+      fixed={false}
+    >
       {children}
     </AppShell>
   );
