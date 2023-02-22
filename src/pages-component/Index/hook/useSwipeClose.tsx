@@ -7,6 +7,8 @@ type UseSwaipeArgs = {
 export const useSwipeClose = (args: UseSwaipeArgs) => {
   const [swaipeYState, setSwaipeYState] = useState({ start: 0, move: 0 });
 
+  const isCloseable = swaipeYState.move > 70;
+
   const handleStart: React.TouchEventHandler<HTMLDivElement> = useCallback(
     (event) => {
       setSwaipeYState((prev) => ({ ...prev, start: event.touches[0].pageY }));
@@ -37,7 +39,7 @@ export const useSwipeClose = (args: UseSwaipeArgs) => {
 
   const TouchBarComponent = (
     <div
-      className="absolute top-2 flex h-10 w-screen justify-center  "
+      className="absolute top-2 flex h-[600px] w-screen justify-center  "
       onTouchStart={handleStart}
       onTouchMove={handleMove}
       onTouchEnd={handleEnd}
@@ -46,5 +48,5 @@ export const useSwipeClose = (args: UseSwaipeArgs) => {
     </div>
   );
 
-  return { swaipeYState, setSwaipeYState, TouchBarComponent };
+  return { isCloseable, swaipeYState, setSwaipeYState, TouchBarComponent };
 };

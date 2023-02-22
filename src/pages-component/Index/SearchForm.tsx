@@ -44,6 +44,7 @@ export const SearchForm: FC<Props> = memo((props) => {
           variant="filled"
           label="タイトル"
           placeholder="料理名で探す"
+          size="md"
           icon={<IconSearch size={16} />}
           autoComplete={"off"}
         />
@@ -57,14 +58,15 @@ export const SearchForm: FC<Props> = memo((props) => {
         <Space h={5} />
 
         <Group position="right" spacing="sm">
-          <Button onClick={handleClear} variant="default" size="sm">
+          <Button onClick={handleClear} variant="default" size="md" radius="xl">
             クリア
           </Button>
 
           <Button
             type="submit"
             color="yellow"
-            size="sm"
+            size="md"
+            radius="xl"
             onClick={() => handleSubmit()}
           >
             検索

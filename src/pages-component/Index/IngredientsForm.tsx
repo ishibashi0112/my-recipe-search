@@ -148,6 +148,7 @@ export const IngredientsForm: FC<Props> = memo((props) => {
         classNames={{ input: "text-base placeholder:text-sm" }}
         value={value}
         onChange={handleOnChange}
+        size="md"
         variant="filled"
         label="材料"
         description="※平仮名での検索をお願いします。"
@@ -177,8 +178,8 @@ export const IngredientsForm: FC<Props> = memo((props) => {
       <Space h={7} />
 
       <Card className="overflow-visible" p={0}>
-        <ScrollArea style={{ height: 300 }} type="always">
-          <Table fontSize="xs" highlightOnHover striped>
+        <ScrollArea.Autosize maxHeight={300} type="always">
+          <Table fontSize="sm" highlightOnHover striped>
             <thead>
               <tr>
                 <th>選択中 {`${props.selectedIngredients.length}点`}</th>
@@ -220,7 +221,7 @@ export const IngredientsForm: FC<Props> = memo((props) => {
               </tbody>
             )}
           </Table>
-        </ScrollArea>
+        </ScrollArea.Autosize>
       </Card>
     </div>
   );

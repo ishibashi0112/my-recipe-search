@@ -1,4 +1,4 @@
-import { Button, Drawer } from "@mantine/core";
+import { Button, Drawer, Text } from "@mantine/core";
 import { IconSearch } from "@tabler/icons";
 import React, { FC, useCallback, useState } from "react";
 
@@ -38,14 +38,18 @@ export const SearchButton: FC<Props> = (props) => {
 
       <Drawer
         classNames={{
-          title: " font-semibold  font-serif",
-          drawer: "rounded-t-2xl pt-5",
+          title: " font-semibold font-mono",
+          drawer: " rounded-t-2xl pt-5",
           closeButton: "z-50",
         }}
         styles={{
           drawer: { height: `calc(75% - ${swaipeYState.move}px)` },
         }}
-        title="レシピ検索"
+        title={
+          <Text ff="revert" align="center" fz="lg" fw="bold">
+            レシピ検索
+          </Text>
+        }
         size="75%"
         padding="sm"
         opened={opened}
