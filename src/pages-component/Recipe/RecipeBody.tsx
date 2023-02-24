@@ -1,5 +1,12 @@
-import { Button, Group, Highlight, Space, Table, Title } from "@mantine/core";
-import { IconArrowBackUp } from "@tabler/icons";
+import {
+  ActionIcon,
+  Group,
+  Highlight,
+  Space,
+  Table,
+  Title,
+} from "@mantine/core";
+import { IconHome2 } from "@tabler/icons";
 import Image from "next/image";
 import Link from "next/link";
 import React, { FC } from "react";
@@ -65,18 +72,18 @@ export const RecipeBody: FC<Props> = (props) => {
       <Space h={10} />
 
       <Group position="right">
-        <Button
-          className=" active:translate-y-0"
+
+        <ActionIcon
+          className=" fixed bottom-12 right-5"
           variant="light"
           radius="xl"
-          color="gray"
-          size="md"
-          leftIcon={<IconArrowBackUp size={16} />}
+          color="dark"
+          size={60}
           component={Link}
           href="/"
         >
-          戻る
-        </Button>
+          <IconHome2 size={30} />
+        </ActionIcon>
       </Group>
     </>
   );

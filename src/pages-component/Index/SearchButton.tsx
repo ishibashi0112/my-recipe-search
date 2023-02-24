@@ -1,4 +1,4 @@
-import { Button, Drawer, Text } from "@mantine/core";
+import { ActionIcon, CloseButton, Drawer, Text } from "@mantine/core";
 import { IconSearch } from "@tabler/icons";
 import React, { FC, useCallback, useState } from "react";
 
@@ -14,7 +14,7 @@ type Props = {
 
 export const SearchButton: FC<Props> = (props) => {
   const [opened, setOpened] = useState(false);
-  const { swaipeYState, setSwaipeYState, TouchBarComponent } = useSwipeClose({
+  const { isCloseable, setSwaipeYState, TouchBarComponent } = useSwipeClose({
     onClose: () => setOpened(false),
   });
 
@@ -25,25 +25,23 @@ export const SearchButton: FC<Props> = (props) => {
 
   return (
     <>
-      <Button
+      <ActionIcon
         className="fixed bottom-12 right-5 active:bg-yellow-400"
         color="yellow"
         radius="xl"
-        size="md"
-        leftIcon={<IconSearch size={16} />}
+        size={60}
+        variant="light"
         onClick={() => handleOpen()}
       >
-        検索
-      </Button>
+        <IconSearch size={30} />
+      </ActionIcon>
 
       <Drawer
         classNames={{
           title: " font-semibold font-mono",
-          drawer: " rounded-t-2xl pt-5",
-          closeButton: "z-50",
-        }}
-        styles={{
-          drawer: { height: `calc(75% - ${swaipeYState.move}px)` },
+          root: `${isCloseable ? "opacity-80" : null}`,
+          drawer: `rounded-t-2xl pt-5 bg-white`,
+          closeButton: "z-50 ",
         }}
         title={
           <Text ff="revert" align="center" fz="lg" fw="bold">
@@ -56,10 +54,19 @@ export const SearchButton: FC<Props> = (props) => {
         onClose={() => setOpened(false)}
         position="bottom"
         overlayOpacity={0.3}
+        withCloseButton={false}
       >
         {TouchBarComponent}
 
         <SearchForm setOpened={setOpened} {...props} />
+
+        <CloseButton
+          className="absolute top-3 right-1"
+          size="xl"
+          color="dark"
+          variant={isCloseable ? "light" : "subtle"}
+          onClick={() => setOpened(false)}
+        />
       </Drawer>
     </>
   );

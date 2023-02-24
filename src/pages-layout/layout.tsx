@@ -10,7 +10,7 @@ type Props = {
 export const Layout: FC<Props> = ({ children }) => {
   return (
     <AppShell
-      classNames={{ body: "bg-gray-50" }}
+      classNames={{ body: "bg-gray-50 pb-24" }}
       header={<Header />}
       fixed={false}
     >
